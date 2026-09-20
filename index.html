@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>L'Atelier des Multiplications</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <script src="script.js"></script>
+</head>
+<body class="bg-amber-50 text-slate-800 min-h-screen flex flex-col antialiased selection:bg-amber-200">
+
+  <header class="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b-2 border-amber-200 shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <span class="text-3xl" aria-hidden="true">🌟</span>
+        <div>
+          <h1 class="text-xl md:text-2xl font-bold text-amber-600 leading-tight">L'Atelier des Multiplications</h1>
+          <p class="text-xs text-slate-500 font-medium hidden sm:block">Explore, compare et deviens un champion du calcul mental !</p>
+        </div>
+      </div>
+
+      <!-- Onglets et bouton son -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <nav class="flex bg-amber-100/70 p-1 rounded-2xl border border-amber-300">
+          <button id="tab-btn-matrix" onclick="switchTab('matrix')" class="px-4 py-1.5 rounded-xl font-semibold text-sm transition-all duration-200 bg-amber-500 text-white shadow-sm flex items-center gap-1.5">
+            <span>🗺️</span> Tableau Magique
+          </button>
+          <button id="tab-btn-quiz" onclick="switchTab('quiz')" class="px-4 py-1.5 rounded-xl font-semibold text-sm transition-all duration-200 text-slate-600 hover:text-amber-700 flex items-center gap-1.5">
+            <span>🎯</span> Entraînement & Jeu
+          </button>
+        </nav>
+
+        <button id="sound-btn" onclick="toggleAudio()" aria-label="Activer ou désactiver le son" class="p-2 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-800 border border-amber-300 transition text-lg">
+          🔊
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto w-full p-3 sm:p-5 flex-1 flex flex-col">
+    
+    <!-- ONGLET 1 : MATRICE INTERACTIVE -->
+    <section id="view-matrix" class="space-y-5">
+      <!-- Panneau explicatif & contrôles d'exploration -->
+      <div class="bg-white rounded-3xl p-4 sm:p-5 shadow-sm border-2 border-amber-200 space-y-4">
+        
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+              <span>🔎</span> Explorer les tables (0 à 10)
+            </h2>
+            <p class="text-xs sm:text-sm text-slate-500">
+              Clique sur une ou deux tables pour voir leurs multiples, ou clique directement sur une case !
+            </p>
+          </div>
+
+          <!-- Raccourcis pédagogiques -->
+          <div class="flex flex-wrap gap-2">
+            <button onclick="highlightDoubleComparison(2, 4)" class="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-semibold px-3 py-1.5 rounded-xl transition">
+              💡 Comparer 2 & 4 (Doubles)
+            </button>
+            <button onclick="highlightDoubleComparison(3, 6)" class="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-semibold px-3 py-1.5 rounded-xl transition">
+              💡 Comparer 3 & 6
+            </button>
+            <button onclick="toggleSquares()" id="btn-squares" class="text-xs bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 font-semibold px-3 py-1.5 rounded-xl transition">
+              ✨ Voir les Carrés (ex: 3×3)
+            </button>
+            <button onclick="resetMatrixHighlights()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold px-3 py-1.5 rounded-xl transition">
+              🔄 Tout réinitialiser
+            </button>
+          </div>
+        </div>
+
+        <!-- Sélecteur rapide des tables (chips numérotés) -->
+        <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 pt-2 border-t border-slate-100">
+          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider mr-1">Tables :</span>
+          <!-- Boutons générés en JS de 0 à 10 -->
+          <div id="table-selector-chips" class="flex flex-wrap gap-1.5"></div>
+        </div>
+
+        <!-- Alerte comparative dynamique -->
+        <div id="compare-banner" class="hidden p-3 rounded-2xl bg-indigo-50 border border-indigo-200 text-xs sm:text-sm text-indigo-900 flex items-start sm:items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <span class="text-xl">👀</span>
+            <span id="compare-text"></span>
+          </div>
+          <button onclick="resetMatrixHighlights()" class="text-indigo-600 hover:text-indigo-900 font-bold text-xs underline shrink-0">Fermer</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        
+        <!-- Grille de Pythagore (0 à 10) -->
+        <div class="lg:col-span-8 bg-white p-3 sm:p-5 rounded-3xl border-2 border-amber-200 shadow-sm overflow-x-auto custom-scrollbar">
+          <div class="min-w-[480px]">
+            <div id="multiplication-grid" class="grid grid-cols-12 gap-1 text-center font-bold text-xs sm:text-sm">
+              <!-- Rempli par JavaScript -->
+            </div>
+          </div>
+          <p class="text-[11px] text-center text-slate-400 mt-3 italic">
+            Astuce : La multiplication est commutative ! Par exemple, 4 × 3 = 3 × 4 = 12.
+          </p>
+        </div>
+
+        <!-- Panneau d'inspection géométrique (visualisation par rectangles/cubes) -->
+        <div class="lg:col-span-4 bg-white p-4 sm:p-5 rounded-3xl border-2 border-amber-200 shadow-sm space-y-4">
+          <div>
+            <h3 class="font-bold text-slate-700 text-base flex items-center gap-2">
+              <span>🧱</span> Comment ça fonctionne ?
+            </h3>
+            <p class="text-xs text-slate-500">Représentation concrète de l'opération en rangées et colonnes.</p>
+          </div>
+
+          <!-- Affichage du calcul sélectionné -->
+          <div class="bg-amber-50 rounded-2xl p-4 text-center border border-amber-200">
+            <div id="inspector-formula" class="text-3xl sm:text-4xl font-black text-amber-600 tracking-wide">
+              3 × 4 = 12
+            </div>
+            <p id="inspector-meaning" class="text-xs text-amber-800 mt-1 font-medium">
+              3 lignes de 4 carrés = 12 carrés en tout
+            </p>
+          </div>
+
+          <!-- Schéma géométrique par points / carreaux -->
+          <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3 flex flex-col items-center justify-center min-h-[160px]">
+            <div id="visual-blocks-container" class="grid gap-1 transition-all duration-300">
+              <!-- Carrés insérés dynamiquement -->
+            </div>
+            <p id="visual-zero-notice" class="hidden text-xs text-slate-400 font-semibold text-center italic">
+              Multiplier par 0 donne toujours 0 ! Il n'y a aucun carré à dessiner.
+            </p>
+          </div>
+
+          <div class="text-xs text-slate-500 bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1">
+            <p><strong>Couleurs :</strong></p>
+            <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded bg-amber-400 inline-block"></span> <span>Case ciblée</span></div>
+            <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded bg-blue-300 inline-block"></span> <span>Première table sélectionnée</span></div>
+            <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded bg-emerald-300 inline-block"></span> <span>Deuxième table comparée</span></div>
+            <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded bg-purple-300 inline-block"></span> <span>Carrés parfaits (n × n)</span></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section id="view-quiz" class="hidden max-w-2xl mx-auto w-full space-y-5">
+      
+      <!-- Configuration rapide du quiz -->
+      <div class="bg-white rounded-3xl p-4 sm:p-5 shadow-sm border-2 border-amber-200">
+        <h2 class="text-base font-bold text-slate-800 mb-2 flex items-center justify-between">
+          <span>⚙️ Choisis tes tables à réviser</span>
+          <span id="quiz-selected-count" class="text-xs font-normal text-slate-500"></span>
+        </h2>
+        
+        <!-- Sélecteur de tables pour le quiz -->
+        <div id="quiz-table-toggles" class="flex flex-wrap gap-1.5 my-3">
+          <!-- Cases à cocher interactives -->
+        </div>
+
+        <!-- Filtres rapides -->
+        <div class="flex flex-wrap gap-2 text-xs font-semibold pt-2 border-t border-slate-100">
+          <button onclick="setQuizTablesPreset('easy')" class="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 hover:bg-emerald-200 transition">Faciles (1, 2, 5, 10)</button>
+          <button onclick="setQuizTablesPreset('hard')" class="px-2.5 py-1 rounded-lg bg-rose-100 text-rose-800 hover:bg-rose-200 transition">À muscler (6, 7, 8, 9)</button>
+          <button onclick="setQuizTablesPreset('all')" class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition">Toutes (0 à 10)</button>
+        </div>
+      </div>
+
+      <!-- Zone de Question et Score -->
+      <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-sm border-2 border-amber-200 flex flex-col items-center relative overflow-hidden">
+        
+        <!-- Ruban de progression & trophée -->
+        <div class="w-full flex items-center justify-between text-xs sm:text-sm font-bold text-slate-600 mb-3">
+          <div class="flex items-center gap-1.5 bg-amber-100 text-amber-800 px-3 py-1 rounded-full">
+            <span>⭐ Score :</span>
+            <span id="quiz-score" class="text-base font-black">0</span>
+          </div>
+          <div class="flex items-center gap-1.5 bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full">
+            <span>🔥 Série :</span>
+            <span id="quiz-streak" class="text-base font-black">0</span>
+          </div>
+        </div>
+
+        <!-- Grande carte d'exercice -->
+        <div class="my-4 text-center">
+          <span class="text-xs uppercase tracking-widest text-slate-400 font-bold">Combien font</span>
+          <div id="quiz-question-display" class="text-5xl sm:text-6xl font-black text-slate-800 my-2 tracking-tight">
+            7 × 8 = ?
+          </div>
+          <div id="quiz-user-input" class="inline-block min-w-[120px] px-4 py-2 text-3xl font-bold bg-amber-50 border-2 border-dashed border-amber-300 text-amber-800 rounded-2xl">
+            <span id="input-text">...</span>
+          </div>
+        </div>
+
+        <!-- Message de feedback immédiat -->
+        <div id="quiz-feedback-box" class="min-h-[44px] w-full text-center text-sm font-bold flex items-center justify-center p-2 rounded-xl mb-3 opacity-0 transition-opacity">
+          <!-- Texte d'aide ou de félicitation -->
+        </div>
+
+        <div class="w-full max-w-xs grid grid-cols-3 gap-2 sm:gap-2.5">
+          <button onclick="handleKeypad('1')" class="h-13 py-3 text-2xl font-bold bg-slate-100 hover:bg-amber-100 active:bg-amber-200 text-slate-800 rounded-2xl shadow-sm transition border border-slate-200">1</button>
+          <button onclick="handleKeypad('2')" class="h-13 py-3 text-2xl font-bold bg-slate-100 hover:bg-amber-100 active:bg-amber-200 text-slate-800 rounded-2xl shadow-sm transition border border-slate-200">2</button>
+          <button onclick="handleKeypad('3')" class="h-13 py-3 text-2xl font-bold bg-slate-100 hover:bg-amber-100 active:bg-amber-200 text-slate-800 rounded-2xl shadow-sm transition border border-slate-200">3</button>
+          
+          <button onclick="handleKeypad('4')" class="h-13 py-3 text-2xl font-bold bg-slate-100 hover:bg-amber-100 active:bg-amber-200 text-slate-800 rounded-2xl shadow-sm transition border border-slate-200">4</button>
+          <button onclick="handleKeypad('5')" class="h-13 py-3 text-2xl font-bold bg-slate-100 hover:bg-amber-100 active:bg-amber-200 text-slate-800 rounded-2xl shadow-sm transition border border-slate-200">5</button>
+          <button onclick="handleKeypad('6')" class="h-13 py-3 text-2xl font-bold bg-slate-100 hover:bg-amber-100 active:bg-amber-200 text-slate-800 rounded-2xl shadow-sm transition border border-slate-200">6</button>
+          
+          <button onclick="handleKeypad('7')" class="h-13 py-3 text-2xl font-bold bg-slate-100 hover:bg-amber-100 active:bg-amber-200 text-slate-800 rounded-2xl shadow-sm transition border border-slate-200">7</button>
+          <button onclick="handleKeypad('8')" class="h-13 py-3 text-2xl font-bold bg-slate-100 hover:bg-amber-100 active:bg-amber-200 text-slate-800 rounded-2xl shadow-sm transition border border-slate-200">8</button>
+          <button onclick="handleKeypad('9')" class="h-13 py-3 text-2xl font-bold bg-slate-100 hover:bg-amber-100 active:bg-amber-200 text-slate-800 rounded-2xl shadow-sm transition border border-slate-200">9</button>
+          
+          <button onclick="handleKeypad('clear')" class="h-13 py-3 text-base font-bold bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-2xl shadow-sm transition border border-rose-200">Effacer</button>
+          <button onclick="handleKeypad('0')" class="h-13 py-3 text-2xl font-bold bg-slate-100 hover:bg-amber-100 active:bg-amber-200 text-slate-800 rounded-2xl shadow-sm transition border border-slate-200">0</button>
+          <button onclick="validateQuizAnswer()" class="h-13 py-3 text-lg font-bold bg-amber-500 hover:bg-amber-600 active:scale-95 text-white rounded-2xl shadow-sm transition flex items-center justify-center">
+            Valider ✅
+          </button>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+</body>
+</html>
